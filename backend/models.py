@@ -5,7 +5,7 @@ import uuid
 
 class UserBase(BaseModel):
     name: str
-    phone: str
+    phone: int
     lga: str  # Local Government Area
 
 class UserCreate(UserBase):
