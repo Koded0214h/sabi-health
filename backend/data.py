@@ -2,37 +2,29 @@ import os
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
-from models import Base, User, Log
-from typing import Dict, List
+from models import Base
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URI")
-if DATABASE_URL and DATABASE_URL.startswith("postgresql://"):
-    # Convert to asyncpg if needed
-    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
+DATABASE_URL = (
+    os.getenv("DATABASE_URI", "")
+    .replace("postgresql://", "postgresql+asyncpg://", 1)
+    .split("?")[0]  # strip ALL query params
+)
 
-engine = None
-AsyncSessionLocal = None
+engine = create_async_engine(
+    DATABASE_URL,
+    echo=True,
+    connect_args={"ssl": True}
+)
 
-if DATABASE_URL:
-    engine = create_async_engine(DATABASE_URL, echo=True)
-    AsyncSessionLocal = sessionmaker(
-        engine, class_=AsyncSession, expire_on_commit=False
-    )
-else:
-    print("⚠️ DATABASE_URI not found in environment")
+AsyncSessionLocal = sessionmaker(
+    engine, class_=AsyncSession, expire_on_commit=False
+)
 
 async def init_db():
-    if engine:
-        async with engine.begin() as conn:
-            # For MVP, we can drop and recreate or just create
-            # await conn.run_sync(Base.metadata.drop_all)
-            await conn.run_sync(Base.metadata.create_all)
-    else:
-        print("⚠️ Skipping DB init: Engine not initialized")
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
-# Keep legacy mocks for fallback if needed during transition, 
-# but they will be phased out in main.py
 users_db = {}
 logs_db = []
