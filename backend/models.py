@@ -21,3 +21,4 @@ class Log(BaseModel):
     risk_type: Optional[str] = None
     script: Optional[str] = None
     response: Optional[str] = None
+
