@@ -11,10 +11,10 @@ from twilio.rest import Client
 from twilio.twiml.voice_response import VoiceResponse
 
 from data import AsyncSessionLocal, init_db
-from models import UserCreate, User, Log, DBUser, DBLog, SymptomLog, DBSymptom, UserResponse, LogRequest, UserLogin
+from models import UserCreate, User, Log, DBUser, DBLog, SymptomLog, DBSymptom, UserResponse, LogRequest, UserLogin, DBMessage, Message, MessageCreate
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from services import lga_coords, weather, risk, hotspots, tts, health_centers
+from services import lga_coords, weather, risk, hotspots, tts, health_centers, prediction_service, health_tips
 import ai_service
 from passlib.context import CryptContext
 
@@ -183,6 +183,8 @@ async def get_me(user_id: str, db: AsyncSession = Depends(get_db)):
     for s in recent_symptoms:
         if s.fever: base_score -= 10
         if s.cough: base_score -= 5
+        if getattr(s, 'diarrhea', 0): base_score -= 15
+        if getattr(s, 'vomiting', 0): base_score -= 10
     
     return {
         "user": User.from_orm(user),
@@ -202,6 +204,8 @@ async def log_symptoms(data: SymptomLog, db: AsyncSession = Depends(get_db)):
         cough=data.cough,
         headache=data.headache,
         fatigue=data.fatigue,
+        diarrhea=data.diarrhea,
+        vomiting=data.vomiting,
         notes=data.notes
     )
     db.add(db_symptom)
@@ -235,6 +239,8 @@ async def generate_health_message(user_name: str, lga: str, risk_level: str, rai
         risks.append(hotspot_info["disease"])
     if rainfall > risk.RAINFALL_THRESHOLD:
         risks.append("malaria (heavy rain)")
+    if rainfall > risk.CHOLERA_RAINFALL_THRESHOLD:
+        risks.append("cholera (contamination risk from flooding)")
     
     risk_data = {"risks": risks, "level": risk_level}
     
@@ -498,6 +504,139 @@ async def test_risk(lga: str):
         "is_hotspot": hotspots.is_hotspot(lga),
         "risk": risk_level
     }
+
+# ----------------------------------------------------------------------
+# Mock Rain & Messages
+# ----------------------------------------------------------------------
+
+@app.get("/mock-rain")
+async def get_mock_rain_status():
+    return {"enabled": weather.MOCK_RAIN_ENABLED}
+
+@app.post("/mock-rain")
+async def toggle_mock_rain(
+    enabled: bool = Body(embed=True), 
+    user_id: str = Body(None, embed=True),
+    db: AsyncSession = Depends(get_db)
+):
+    weather.MOCK_RAIN_ENABLED = enabled
+    
+    if user_id and enabled:
+        msg = DBMessage(
+            user_id=user_id,
+            timestamp=datetime.utcnow().isoformat(),
+            title="Heavy Rain Detected (Simulated)",
+            content="Heavy rain is fall-ing! Abeg clean your environment and clear gutters to avoid malaria and cholera.",
+            type="rain"
+        )
+        db.add(msg)
+        await db.commit()
+        
+    return {"status": "ok", "enabled": enabled}
+
+@app.get("/messages/{user_id}", response_model=list[Message])
+async def get_user_messages(user_id: str, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(DBMessage).where(DBMessage.user_id == user_id).order_by(DBMessage.timestamp.desc())
+    )
+    messages = result.scalars().all()
+    return [Message.from_orm(m) for m in messages]
+
+@app.post("/messages", response_model=Message)
+async def create_message(msg_data: MessageCreate, db: AsyncSession = Depends(get_db)):
+    db_msg = DBMessage(
+        user_id=msg_data.user_id,
+        timestamp=datetime.utcnow().isoformat(),
+        title=msg_data.title,
+        content=msg_data.content,
+        type=msg_data.type
+    )
+    db.add(db_msg)
+    await db.commit()
+    await db.refresh(db_msg)
+    return Message.from_orm(db_msg)
+
+@app.post("/predict-weekly/{user_id}")
+async def predict_weekly(user_id: str, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(DBUser).where(DBUser.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    coords = await lga_coords.get_coordinates(user.lga)
+    rainfall = await weather.get_rainfall(coords[0], coords[1]) if coords else 0.0
+    
+    prediction = prediction_service.generate_weekly_prediction(user.lga, rainfall)
+    
+    # Save as a message
+    db_msg = DBMessage(
+        user_id=user_id,
+        timestamp=datetime.utcnow().isoformat(),
+        title=f"Weekly Prediction: {prediction['predicted_risk']} Outlook",
+        content=prediction['summary'] + " " + prediction['recommendation'],
+        type="prediction"
+    )
+    db.add(db_msg)
+    await db.commit()
+    
+    return prediction
+
+@app.post("/chat")
+async def chat_with_sabi(message: str = Body(..., embed=True), user_id: str = Body(None, embed=True), db: AsyncSession = Depends(get_db)):
+    user_name = "Member"
+    personality = "Mama Health"
+    lga = "Lagos"
+    
+    if user_id:
+        result = await db.execute(select(DBUser).where(DBUser.id == user_id))
+        user = result.scalar_one_or_none()
+        if user:
+            user_name = user.name
+            personality = user.ai_personality
+            lga = user.lga
+
+    prompt = f"""
+    You are {personality}, a health guardian powered by Gemini AI.
+    User Name: {user_name}
+    User Location (LGA): {lga}
+    
+    User says: {message}
+    
+    TASK: Respond to the user's health query or greeting in a culturally relevant Nigerian way (mix Pidgin and English).
+    Be helpful, preventive, and caring. Keep the response under 100 words.
+    Use Nigerian proverbs or slang where appropriate for your personality.
+    Always state that you are an AI assistant.
+    """
+    
+    try:
+        response = ai_service.model.generate_content(prompt)
+        return {"response": response.text.strip().replace('"', '')}
+    except Exception as e:
+        print(f"Chat Error: {e}")
+        return {"response": "Abeg, my brain small-small reset. Ask me again later, my pikin."}
+
+@app.post("/generate-cultural-tip/{user_id}")
+async def generate_cultural_tip(user_id: str, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(DBUser).where(DBUser.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    tip = health_tips.get_random_tip()
+    
+    # Save as a message
+    db_msg = DBMessage(
+        user_id=user_id,
+        timestamp=datetime.utcnow().isoformat(),
+        title=f"Sabi Tip: {tip['title']}",
+        content=tip['content'],
+        type="tip"
+    )
+    db.add(db_msg)
+    await db.commit()
+    await db.refresh(db_msg)
+    
+    return {"status": "ok", "message": Message.from_orm(db_msg)}
 
 @app.get("/")
 def root():

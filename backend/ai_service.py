@@ -43,6 +43,7 @@ def generate_health_script(user_name: str, lga: str, risk_data: dict, personalit
     MIX Nigerian Pidgin with English as is natural for your personality.
     IMPORTANT: Provide DIFFERENT advice every time—range from diet, hygiene, environmental tips, to specific first aid.
     INCLUDE at least two specific preventive measures related to the risks: {risks_str}.
+    If Cholera is mentioned, prioritize advice on boiling water and hand hygiene.
     SUGGEST care or first steps if they feel symptoms.
     Always end with a unique check-in question.
     """

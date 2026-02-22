@@ -2,6 +2,7 @@
 from services.hotspots import is_hotspot
 
 RAINFALL_THRESHOLD = 15.0  # mm in last 24h
+CHOLERA_RAINFALL_THRESHOLD = 20.0 # mm in last 24h
 
 def check_risk_for_lga(lga: str, rainfall: float) -> str:
     """

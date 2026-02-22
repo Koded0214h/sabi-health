@@ -5,11 +5,15 @@ from datetime import datetime, timedelta
 
 OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast"
 
+MOCK_RAIN_ENABLED = False
+
 async def get_rainfall(lat: float, lon: float) -> float:
     """
     Fetch total rainfall (mm) in the last 24 hours for given coordinates.
     Returns 0.0 if no data or error.
     """
+    if MOCK_RAIN_ENABLED:
+        return 25.5
     params = {
         "latitude": lat,
         "longitude": lon,

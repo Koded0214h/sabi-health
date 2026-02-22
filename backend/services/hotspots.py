@@ -14,6 +14,9 @@ HOTSPOTS_DATA = {
     "abuja": {"disease": "Malaria", "risk": "MEDIUM", "source": "NCDC Weekly Epidemiological Report Feb 2026"},
     "kaduna": {"disease": "Lassa fever", "risk": "MEDIUM", "source": "NCDC Situation Report Week 7 2026"},
     "maiduguri": {"disease": "Cholera", "risk": "HIGH", "source": "NCDC Situation Report Week 6 2026"},
+    "plateau": {"disease": "Cholera", "risk": "HIGH", "source": "NCDC Situation Report Week 8 2026"},
+    "zamfara": {"disease": "Cholera", "risk": "HIGH", "source": "NCDC Situation Report Week 8 2026"},
+    "cross river": {"disease": "Cholera", "risk": "HIGH", "source": "NCDC Situation Report Week 8 2026"},
     "enugu": {"disease": "Malaria", "risk": "MEDIUM", "source": "NCDC Weekly Epidemiological Report Feb 2026"},
 }
 

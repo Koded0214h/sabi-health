@@ -25,6 +25,16 @@ class DBLog(Base):
     audio_url = Column(String, nullable=True)
     response = Column(String)
 
+class DBMessage(Base):
+    __tablename__ = "messages"
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String, nullable=False)
+    timestamp = Column(String, nullable=False)
+    title = Column(String, nullable=False)
+    content = Column(Text, nullable=False)
+    type = Column(String) # "rain", "outbreak", "prediction", "alert"
+    is_read = Column(Integer, default=0)
+
 class DBSymptom(Base):
     __tablename__ = "symptoms"
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -34,6 +44,8 @@ class DBSymptom(Base):
     cough = Column(Integer, default=0)
     headache = Column(Integer, default=0)
     fatigue = Column(Integer, default=0)
+    diarrhea = Column(Integer, default=0)
+    vomiting = Column(Integer, default=0)
     notes = Column(Text, nullable=True)
 
 class UserBase(BaseModel):
@@ -64,6 +76,8 @@ class SymptomLog(BaseModel):
     cough: int = 0
     headache: int = 0
     fatigue: int = 0
+    diarrhea: int = 0
+    vomiting: int = 0
     notes: Optional[str] = None
     lat: Optional[float] = None
     lon: Optional[float] = None
@@ -91,3 +105,20 @@ class LogRequest(BaseModel):
 class UserLogin(BaseModel):
     phone: int
     password: str
+
+class MessageBase(BaseModel):
+    user_id: str
+    title: str
+    content: str
+    type: str # "rain", "outbreak", "prediction", "alert"
+
+class MessageCreate(MessageBase):
+    pass
+
+class Message(MessageBase):
+    id: str
+    timestamp: str
+    is_read: int
+
+    class Config:
+        from_attributes = True
