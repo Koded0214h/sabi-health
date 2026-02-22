@@ -9,7 +9,6 @@ export const api = axios.create({
   },
 });
 
-// Types based on backend documentation
 export interface User {
   id: string;
   name: string;
@@ -25,6 +24,7 @@ export interface Log {
   timestamp: string;
   risk_type: string;
   script: string;
+  audio_url: string | null;
   response: string | null;
 }
 

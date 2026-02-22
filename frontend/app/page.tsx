@@ -17,7 +17,7 @@ const containerVariants = {
       delayChildren: 0.3,
     },
   },
-};
+} as const;
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -26,7 +26,7 @@ const itemVariants = {
     y: 0,
     transition: { duration: 0.8, ease: "easeOut" },
   },
-};
+} as const;
 
 export default function Home() {
   return (

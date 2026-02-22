@@ -1,4 +1,3 @@
-# scheduler.py
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 import os
@@ -15,18 +14,16 @@ async def get_all_user_ids():
         return result.scalars().all()
 
 async def check_user_and_call(user_id: str):
-    """Internal async function to trigger call for a user."""
-    domain = os.getenv("DOMAIN", "http://127.0.0.1:8000")
+    domain = os.getenv("DOMAIN", "https://sabi-health.onrender.com/")
     async with httpx.AsyncClient() as client:
         try:
-            resp = await client.post(f"{domain}/call-user/{user_id}")
+            resp = await client.put(f"{domain}/call-user/{user_id}")
             resp.raise_for_status()
             print(f"Scheduled call for user {user_id}: {resp.json()}")
         except Exception as e:
             print(f"Failed scheduled call for user {user_id}: {e}")
 
 def run_scheduled_checks():
-    """Wrapper to run async checks in sync scheduler thread."""
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     try:
@@ -37,7 +34,6 @@ def run_scheduled_checks():
     finally:
         loop.close()
 
-# Initialize scheduler
 scheduler = BackgroundScheduler()
 scheduler.start()
 scheduler.add_job(
@@ -48,5 +44,4 @@ scheduler.add_job(
     replace_existing=True
 )
 
-# Shut down scheduler on exit
 atexit.register(lambda: scheduler.shutdown())

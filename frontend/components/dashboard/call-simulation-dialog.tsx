@@ -23,8 +23,24 @@ export function CallSimulationDialog({ data, onClose }: { data: any, onClose: ()
 
   const handleAnswer = () => {
     setStatus("connected");
-    // Play audio logic would go here if we had an actual audio file
-    setAudioPlayed(true);
+    if (data.audio_url) {
+      let audioUrl = data.audio_url;
+      // Handle relative paths if any, though backend sends full URLs
+      if (audioUrl.startsWith("/audio")) {
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+        audioUrl = `${baseUrl}${audioUrl}`;
+      }
+      
+      const audio = new Audio(audioUrl);
+      audio.play().then(() => {
+        setAudioPlayed(true);
+      }).catch(e => {
+        console.error("Audio playback failed", e);
+        toast.error("AI Voice failed to play. Check your speaker permissions.");
+      });
+    } else {
+      setAudioPlayed(true);
+    }
   };
 
   const submitResponse = async (response: "fever" | "fine") => {

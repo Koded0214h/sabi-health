@@ -36,10 +36,8 @@ DOMAIN = os.getenv("DOMAIN", "http://localhost:8000")
 
 app = FastAPI(title="Sabi Health API")
 
-# Mount static audio directory
 app.mount("/audio", StaticFiles(directory="audio"), name="audio")
 
-# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -48,7 +46,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Twilio client (if credentials present)
 twilio_client = None
 if TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN and TWILIO_PHONE_NUMBER:
     twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
@@ -61,18 +58,13 @@ async def startup_event():
     await init_db()
     print("🚀 Database initialized")
 
-# Dependency to get DB session
 async def get_db():
     async with AsyncSessionLocal() as session:
         yield session
 
-# ----------------------------------------------------------------------
-# Core endpoints
-# ----------------------------------------------------------------------
 @app.post("/register", response_model=User)
 async def register_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
     try:
-        # Check if user already exists
         existing_user = await db.execute(select(DBUser).where(DBUser.phone == user.phone))
         if existing_user.scalar_one_or_none():
             raise HTTPException(status_code=400, detail="Phone number already registered")
@@ -94,7 +86,6 @@ async def register_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
 async def login_user(user_login: UserLogin, db: AsyncSession = Depends(get_db)):
     try:
         result = await db.execute(select(DBUser).where(DBUser.phone == user_login.phone))
-        # Use scalars().all() to handle potential duplicates and avoid MultipleResultsFound
         users = result.scalars().all()
 
         if not users:
@@ -161,25 +152,19 @@ async def check_user_risk(user_id: str, db: AsyncSession = Depends(get_db)):
 
 @app.get("/me/{user_id}")
 async def get_me(user_id: str, db: AsyncSession = Depends(get_db)):
-    # Get user profile
     user_result = await db.execute(select(DBUser).where(DBUser.id == user_id))
     user = user_result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    # Get user's specific logs
     log_result = await db.execute(select(DBLog).where(DBLog.user_id == user_id).order_by(DBLog.timestamp.desc()))
     logs = log_result.scalars().all()
 
-    # Get user's symptoms
     symptom_result = await db.execute(select(DBSymptom).where(DBSymptom.user_id == user_id).order_by(DBSymptom.timestamp.desc()))
     symptoms = symptom_result.scalars().all()
     
-    # Calculate Daily Health Score (simplified logic)
-    # Score starts at 100, drops based on risk level and symptoms
     base_score = 100
     
-    # Get current risk
     coords = await lga_coords.get_coordinates(user.lga)
     risk_level = "LOW"
     rainfall = 0
@@ -190,7 +175,6 @@ async def get_me(user_id: str, db: AsyncSession = Depends(get_db)):
     if risk_level == "HIGH": base_score -= 30
     elif risk_level == "MEDIUM": base_score -= 15
     
-    # Check latest symptoms (last 3 days)
     recent_symptoms = symptoms[:3]
     for s in recent_symptoms:
         if s.fever: base_score -= 10
@@ -222,9 +206,7 @@ async def log_symptoms(data: SymptomLog, db: AsyncSession = Depends(get_db)):
     return SymptomLog.from_orm(db_symptom)
 
 
-# ----------------------------------------------------------------------
-# Message generation (with YarnGPT)
-# ----------------------------------------------------------------------
+
 async def generate_health_message(user_name: str, lga: str, risk_level: str, rainfall: float, personality: str = "Mama Health"):
     hotspot_info = hotspots.get_hotspot_info(lga)
     risks = []
@@ -235,7 +217,6 @@ async def generate_health_message(user_name: str, lga: str, risk_level: str, rai
     
     risk_data = {"risks": risks, "level": risk_level}
     
-    # Generate script via Gemini
     script = ai_service.generate_health_script(user_name, lga, risk_data, personality)
 
     # Convert to speech via YarnGPT
@@ -286,7 +267,7 @@ def generate_twiml(script: str, audio_url: str = None, call_id: str = None) -> s
 # Call initiation (Twilio + simulation fallback)
 # ----------------------------------------------------------------------
 @app.put("/call-user/{user_id}")
-async def call_user(user_id: str, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
+async def call_user(user_id: str, background_tasks: BackgroundTasks, force: bool = False, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(DBUser).where(DBUser.id == user_id))
     user = result.scalar_one_or_none()
     if not user:
@@ -300,7 +281,7 @@ async def call_user(user_id: str, background_tasks: BackgroundTasks, db: AsyncSe
     rainfall = await weather.get_rainfall(lat, lon)
     risk_level = risk.check_risk_for_lga(user.lga, rainfall)
 
-    if risk_level == "LOW":
+    if risk_level == "LOW" and not force:
         return {
             "status": "ok",
             "risk": risk_level,
@@ -318,6 +299,7 @@ async def call_user(user_id: str, background_tasks: BackgroundTasks, db: AsyncSe
         timestamp=datetime.utcnow().isoformat(),
         risk_type=risk_level,
         script=script,
+        audio_url=audio_url,
         response=None
     )
     db.add(db_log)

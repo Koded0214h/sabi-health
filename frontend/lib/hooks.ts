@@ -5,8 +5,6 @@ import { api, User, Log, RiskCheckResponse, MeResponse } from "./api";
 import { toast } from "sonner";
 
 
-// --- User Hooks ---
-
 export const useMe = () => {
   return useQuery<MeResponse & { riskCheck: RiskCheckResponse | null }>({
     queryKey: ["me"],
@@ -78,8 +76,6 @@ export const useRegisterUser = () => {
   });
 };
 
-// --- Risk Hooks ---
-
 export const useRiskCheck = (userId: string | null) => {
   return useQuery<RiskCheckResponse>({
     queryKey: ["risk", userId],
@@ -91,13 +87,12 @@ export const useRiskCheck = (userId: string | null) => {
   });
 };
 
-// --- Call Hooks ---
 
 export const useCallUser = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (userId: string) => {
-      const { data } = await api.put(`/call-user/${userId}`);
+      const { data } = await api.put(`/call-user/${userId}?force=true`);
       return data;
     },
     onSuccess: () => {
@@ -110,7 +105,6 @@ export const useCallUser = () => {
   });
 };
 
-// --- Log Hooks ---
 
 export const useLogs = () => {
   return useQuery<Log[]>({

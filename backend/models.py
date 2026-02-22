@@ -22,6 +22,7 @@ class DBLog(Base):
     timestamp = Column(String, nullable=False)
     risk_type = Column(String)
     script = Column(Text)
+    audio_url = Column(String, nullable=True)
     response = Column(String)
 
 class DBSymptom(Base):
@@ -69,6 +70,7 @@ class Log(BaseModel):
     timestamp: str
     risk_type: Optional[str] = None
     script: Optional[str] = None
+    audio_url: Optional[str] = None
     response: Optional[str] = None
 
     class Config:

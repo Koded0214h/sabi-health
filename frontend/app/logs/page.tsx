@@ -17,9 +17,11 @@ import {
   CheckCircle2, 
   XCircle, 
   HelpCircle,
-  Loader2
+  Loader2,
+  Volume2
 } from "lucide-react";
 import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
 
 export default function LogsPage() {
   const { data: logs, isLoading } = useLogs();
@@ -68,11 +70,12 @@ export default function LogsPage() {
               ) : (
                 <div className="overflow-x-auto">
                    <table className="w-full text-sm">
-                      <thead>
+                       <thead>
                         <tr className="border-b border-white/10 text-muted-foreground bg-white/5 text-left">
                           <th className="px-8 py-4 font-medium">Timestamp</th>
                           <th className="px-8 py-4 font-medium">Risk Layer</th>
                           <th className="px-8 py-4 font-medium">AI Script Snippet</th>
+                          <th className="px-8 py-4 font-medium">Playback</th>
                           <th className="px-8 py-4 font-medium">Member Status</th>
                         </tr>
                       </thead>
@@ -95,6 +98,27 @@ export default function LogsPage() {
                             </td>
                             <td className="px-8 py-4 max-w-xs truncate">
                                <span className="text-muted-foreground italic">"{log.script.substring(0, 60)}..."</span>
+                            </td>
+                            <td className="px-8 py-4">
+                               {log.audio_url ? (
+                                 <Button 
+                                   variant="ghost" 
+                                   size="sm" 
+                                   className="rounded-full h-8 w-8 p-0 hover:bg-emerald-500/20 hover:text-emerald-600"
+                                   onClick={() => {
+                                     let url = log.audio_url!;
+                                     if (url.startsWith("/audio")) {
+                                       const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+                                       url = `${baseUrl}${url}`;
+                                     }
+                                     new Audio(url).play().catch(e => console.error(e));
+                                   }}
+                                 >
+                                   <Volume2 className="h-4 w-4" />
+                                 </Button>
+                               ) : (
+                                 <span className="text-xs text-muted-foreground opacity-50">N/A</span>
+                               )}
                             </td>
                             <td className="px-8 py-4">
                                {log.response === "fever" ? (

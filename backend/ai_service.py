@@ -9,7 +9,7 @@ load_dotenv()
 api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
 if api_key:
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('models/gemini-2.0-flash')
 else:
     model = None
 
@@ -35,9 +35,11 @@ def generate_health_script(user_name: str, lga: str, risk_data: dict, personalit
     User: {user_name}
     Risks: {risks_str}
     
-    TASK: Give a short proactive health warning (under 60 words).
+    TASK: Give a short proactive health warning (under 80 words).
     State clearly that this is an AI-assisted health check powered by Gemini.
     MIX Nigerian Pidgin with English as is natural for your personality.
+    INCLUDE at least two specific preventive measures related to the risks provided.
+    SUGGEST care or first steps if they feel symptoms (e.g., using specific local health center info if implied, or general advice like 'drink plenty water' or 'see doctor').
     Always end with a check-in question like: "How your body dey?" or "Status check?".
     """
     

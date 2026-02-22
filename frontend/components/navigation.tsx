@@ -5,12 +5,15 @@ import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 import * as NextNavigation from "next/navigation";
 import { useEffect, useState } from "react";
-import { HeartPulse } from "lucide-react";
+import { HeartPulse, Activity } from "lucide-react";
+import { useMe } from "@/lib/hooks";
+import { Badge } from "./ui/badge";
 
 export function Navigation() {
   const pathname = NextNavigation.usePathname();
   const router = NextNavigation.useRouter();
   const [user, setUser] = useState<any>(null);
+  const { data: me } = useMe();
 
   useEffect(() => {
     const storedUser = localStorage.getItem("sabi_user");
@@ -51,12 +54,40 @@ export function Navigation() {
             <Link 
               href="/dashboard" 
               className={cn(
-                "hover:text-primary transition-colors",
+                "hover:text-primary transition-colors flex items-center gap-2",
                 pathname === "/dashboard" ? "text-primary" : "text-muted-foreground"
               )}
             >
               Dashboard
             </Link>
+            
+            {/* Health Status Indicator */}
+            {me && (
+              <div className="flex items-center gap-3 px-3 py-1.5 bg-white/5 rounded-full border border-white/10">
+                <div className="flex items-center gap-2">
+                  <Activity className={cn(
+                    "w-4 h-4",
+                    me.health_score > 70 ? "text-emerald-500" : me.health_score > 40 ? "text-yellow-500" : "text-red-500"
+                  )} />
+                  <span className="text-xs font-bold">{me.health_score}%</span>
+                </div>
+                <div className="h-4 w-[1px] bg-white/10" />
+                <Badge variant={me.current_risk === "HIGH" ? "destructive" : "success"} className="h-5 text-[10px] px-2">
+                  {me.current_risk} RISK
+                </Badge>
+              </div>
+            )}
+
+            <Link 
+              href="/symptoms" 
+              className={cn(
+                "hover:text-primary transition-colors",
+                pathname === "/symptoms" ? "text-primary" : "text-muted-foreground"
+              )}
+            >
+              Symptoms
+            </Link>
+
             <Link 
               href="/logs" 
               className={cn(
@@ -64,7 +95,7 @@ export function Navigation() {
                 pathname === "/logs" ? "text-primary" : "text-muted-foreground"
               )}
             >
-              Recent Alerts
+              Calls
             </Link>
           </>
         )}
