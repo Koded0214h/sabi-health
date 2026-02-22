@@ -16,6 +16,15 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from services import lga_coords, weather, risk, hotspots, tts
 import ai_service
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
 
 load_dotenv()  # Load environment variables from .env file
 
@@ -62,17 +71,46 @@ async def get_db():
 # ----------------------------------------------------------------------
 @app.post("/register", response_model=User)
 async def register_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
-    db_user = DBUser(**user.dict())
+    hashed_password = get_password_hash(user.password)
+    db_user = DBUser(**user.dict(exclude={"password"}), hashed_password=hashed_password)
     db.add(db_user)
     await db.commit()
     await db.refresh(db_user)
     return User.from_orm(db_user)
+
+@app.post("/login", response_model=User)
+async def login_user(user_login: UserLogin, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(DBUser).where(DBUser.phone == user_login.phone))
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(status_code=400, detail="Incorrect phone number or password")
+    
+    if not verify_password(user_login.password, user.hashed_password):
+        raise HTTPException(status_code=400, detail="Incorrect phone number or password")
+    
+    return User.from_orm(user)
 
 @app.get("/users", response_model=list[User])
 async def list_users(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(DBUser))
     users = result.scalars().all()
     return [User.from_orm(u) for u in users]
+
+@app.post("/log", response_model=Log)
+async def create_log(log_data: LogRequest, db: AsyncSession = Depends(get_db)):
+    db_log = DBLog(
+        id=str(uuid.uuid4()),
+        user_id=log_data.user_id,
+        timestamp=datetime.utcnow().isoformat(),
+        risk_type=log_data.risk_type,
+        script=log_data.script,
+        response=None
+    )
+    db.add(db_log)
+    await db.commit()
+    await db.refresh(db_log)
+    return Log.from_orm(db_log)
 
 @app.get("/logs", response_model=list[Log])
 async def get_logs(db: AsyncSession = Depends(get_db)):
@@ -236,6 +274,15 @@ from pydantic import BaseModel
 
 class UserResponse(BaseModel):
     response: str
+
+class LogRequest(BaseModel):
+    user_id: str
+    risk_type: str
+    script: str
+
+class UserLogin(BaseModel):
+    phone: int
+    password: str
 
 @app.post("/respond/{call_id}")
 async def record_response(

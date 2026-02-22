@@ -12,6 +12,7 @@ class DBUser(Base):
     name = Column(String, nullable=False)
     phone = Column(BigInteger, nullable=False)
     lga = Column(String, nullable=False)
+    hashed_password = Column(String, nullable=False)
 
 class DBLog(Base):
     __tablename__ = "logs"
@@ -28,7 +29,7 @@ class UserBase(BaseModel):
     lga: str  # Local Government Area
 
 class UserCreate(UserBase):
-    pass
+    password: str
 
 class User(UserBase):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
