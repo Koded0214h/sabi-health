@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { HeartPulse, Calendar, Settings } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useMe } from "@/lib/hooks";
+import { MockRainToggle } from "@/components/dashboard/mock-rain-toggle";
+import { MiniChat } from "@/components/dashboard/mini-chat";
 
 export default function DashboardPage() {
   const [greeting, setGreeting] = useState("Good Morning");
@@ -46,11 +48,12 @@ export default function DashboardPage() {
             </p>
           </div>
           <div className="flex items-center gap-4">
-             <div className="text-right hidden md:block">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Active Identity</p>
-                <p className="text-sm font-bold text-emerald-700">{me?.user?.ai_personality || "Mama Health"}</p>
-             </div>
-             <Settings className="h-6 w-6 text-muted-foreground cursor-pointer hover:rotate-90 transition-transform duration-500" />
+              <div className="text-right hidden md:block">
+                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Active Identity</p>
+                 <p className="text-sm font-bold text-emerald-700">{me?.user?.ai_personality || "Mama Health"}</p>
+              </div>
+              <MockRainToggle />
+              <Settings className="h-6 w-6 text-muted-foreground cursor-pointer hover:rotate-90 transition-transform duration-500" />
           </div>
         </div>
 
@@ -70,6 +73,8 @@ export default function DashboardPage() {
            </div>
         </div>
       </div>
+      
+      <MiniChat />
     </main>
   );
 }

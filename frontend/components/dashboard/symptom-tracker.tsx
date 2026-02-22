@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useLogSymptoms } from "@/lib/hooks";
-import { Thermometer, Wind, Brain, Battery, Send, Loader2 } from "lucide-react";
+import { Thermometer, Wind, Brain, Battery, Send, Loader2, Droplets, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
 import { ExternalLink, MapPin, ShieldAlert, X } from "lucide-react";
@@ -23,6 +23,8 @@ export function SymptomTracker() {
     cough: 0,
     headache: 0,
     fatigue: 0,
+    diarrhea: 0,
+    vomiting: 0,
     notes: ""
   });
   const [hospital, setHospital] = useState<any>(null);
@@ -43,7 +45,7 @@ export function SymptomTracker() {
             setUserCoords({ lat: res.data.lat, lon: res.data.lon });
           }
         } else {
-          setFormData({ fever: 0, cough: 0, headache: 0, fatigue: 0, notes: "" });
+          setFormData({ fever: 0, cough: 0, headache: 0, fatigue: 0, diarrhea: 0, vomiting: 0, notes: "" });
         }
       }
     });
@@ -54,6 +56,8 @@ export function SymptomTracker() {
     { id: "cough", label: "Cough", icon: Wind, color: "text-blue-500", bg: "bg-blue-50" },
     { id: "headache", label: "Headache", icon: Brain, color: "text-purple-500", bg: "bg-purple-50" },
     { id: "fatigue", label: "Fatigue", icon: Battery, color: "text-amber-500", bg: "bg-amber-50" },
+    { id: "diarrhea", label: "Diarrhea", icon: Droplets, color: "text-blue-600", bg: "bg-blue-50" },
+    { id: "vomiting", label: "Vomiting", icon: Activity, color: "text-orange-500", bg: "bg-orange-50" },
   ];
 
   return (

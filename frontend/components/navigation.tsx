@@ -40,15 +40,7 @@ export function Navigation() {
       </Link>
 
       <div className="hidden md:flex items-center gap-8 text-sm font-medium">
-        <Link 
-          href="/" 
-          className={cn(
-            "hover:text-primary transition-colors",
-            pathname === "/" ? "text-primary" : "text-muted-foreground"
-          )}
-        >
-          Home
-        </Link>
+
         {user && (
           <>
             <Link 
@@ -60,8 +52,7 @@ export function Navigation() {
             >
               Dashboard
             </Link>
-            
-            {/* Health Status Indicator */}
+          
             {me && (
               <div className="flex items-center gap-3 px-3 py-1.5 bg-white/5 rounded-full border border-white/10">
                 <div className="flex items-center gap-2">
@@ -96,6 +87,16 @@ export function Navigation() {
               )}
             >
               Calls
+            </Link>
+
+            <Link 
+              href="/messages" 
+              className={cn(
+                "hover:text-primary transition-colors",
+                pathname === "/messages" ? "text-primary" : "text-muted-foreground"
+              )}
+            >
+              Messages
             </Link>
           </>
         )}

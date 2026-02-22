@@ -13,6 +13,12 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: "Sabi Health | Proactive AI Health Guardian",
   description: "Cultural-resonant proactive health alerts and disease prevention for Nigeria.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    title: "Sabi Health",
+    statusBarStyle: "default",
+    capable: true,
+  },
 };
 
 export default function RootLayout({

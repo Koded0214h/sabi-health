@@ -62,4 +62,24 @@ export interface UserResponse {
   lon?: number;
 }
 
+export interface Message {
+  id: string;
+  user_id: string;
+  timestamp: string;
+  title: string;
+  content: string;
+  type: "rain" | "outbreak" | "prediction" | "alert" | "tip";
+  is_read: number;
+}
+
+export interface Prediction {
+  lga: string;
+  week_starting: string;
+  predicted_risk: string;
+  risk_level: string;
+  confidence: string;
+  summary: string;
+  recommendation: string;
+}
+
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api, User, Log, RiskCheckResponse, MeResponse } from "./api";
+import { api, User, Log, RiskCheckResponse, MeResponse, Message } from "./api";
 import { toast } from "sonner";
 
 
@@ -130,6 +130,46 @@ export const useLogs = () => {
     queryFn: async () => {
       const { data } = await api.get("/logs");
       return data;
+    },
+  });
+};
+
+export const useMessages = (userId: string | undefined) => {
+  return useQuery<Message[]>({
+    queryKey: ["messages", userId],
+    queryFn: async () => {
+      const { data } = await api.get(`/messages/${userId}`);
+      return data;
+    },
+    enabled: !!userId,
+  });
+};
+
+export const usePredictWeekly = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (userId: string) => {
+      const { data } = await api.post(`/predict-weekly/${userId}`);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["messages"] });
+      toast.success("Weekly prediction generated!");
+    },
+    onError: () => {
+      toast.error("Failed to generate prediction");
+    },
+  });
+};
+export const useGenerateCulturalTip = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (userId: string) => {
+      const { data } = await api.post(`/generate-cultural-tip/${userId}`);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["messages"] });
     },
   });
 };

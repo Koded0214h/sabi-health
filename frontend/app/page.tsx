@@ -31,98 +31,113 @@ const itemVariants = {
 export default function Home() {
   return (
     <main className="min-h-screen bg-background selection:bg-primary/30 relative overflow-hidden bg-grid-pattern">
-      {/* Animated Background Blobs */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <motion.div 
-          animate={{
-            scale: [1, 1.2, 1],
-            x: [0, 50, 0],
-            y: [0, -30, 0],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-          className="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] bg-emerald-500/10 blur-[120px] rounded-full" 
-        />
-        <motion.div 
-          animate={{
-            scale: [1, 1.1, 1],
-            x: [0, -40, 0],
-            y: [0, 20, 0],
-          }}
-          transition={{
-            duration: 15,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-          className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-teal-500/10 blur-[100px] rounded-full" 
-        />
-      </div>
 
       <Navigation />
 
       {/* Hero Section */}
-      <section className="relative pt-40 pb-24 px-4">
-        <motion.div 
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="max-w-6xl mx-auto flex flex-col items-center text-center space-y-10"
-        >
-          <motion.div variants={itemVariants}>
-            <Badge variant="success" className="py-2.5 px-5 rounded-full border border-emerald-200/50 dark:border-emerald-800/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 backdrop-blur-md shadow-sm">
-              <Sparkles className="w-3.5 h-3.5 mr-2 animate-pulse" />
-              AI-Powered Health Guardian for Nigeria
-            </Badge>
+      <section className="relative pt-32 pb-24 px-4 overflow-hidden">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="flex flex-col space-y-8 text-left"
+          >
+            <motion.div variants={itemVariants}>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100/50 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Active Monitoring. Nigeria-First.
+              </div>
+            </motion.div>
+
+            <motion.h1 
+              variants={itemVariants}
+              className="text-6xl md:text-[5.5rem] font-extrabold tracking-tight text-foreground leading-[1.1]"
+            >
+              The neighbors <br />
+              <span className="text-emerald-600 dark:text-emerald-500 italic font-bold">
+                who call before <br /> sickness strikes.
+              </span>
+            </motion.h1>
+
+            <motion.p 
+              variants={itemVariants}
+              className="text-xl text-muted-foreground max-w-lg leading-relaxed font-medium"
+            >
+              We don't just send alerts, we create proactive health guardians that build family safety, serving communities across Nigeria with results that matter.
+            </motion.p>
+
+            <motion.div 
+              variants={itemVariants}
+              className="flex flex-col sm:flex-row gap-4 pt-4"
+            >
+              <Link href="/register" className="w-full sm:w-auto">
+                <Button size="lg" className="h-14 px-10 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-xl shadow-emerald-500/20 text-lg font-bold w-full">
+                  Start Protecting Now
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+              </Link>
+              <Link href="/dashboard" className="w-full sm:w-auto">
+                <Button size="lg" variant="outline" className="h-14 px-10 rounded-2xl border-2 border-emerald-100 hover:bg-emerald-50 dark:border-emerald-900 dark:hover:bg-emerald-950 text-lg font-bold transition-all w-full">
+                  Explore Dashboard
+                </Button>
+              </Link>
+            </motion.div>
+
+            <motion.div 
+              variants={itemVariants}
+              className="pt-8 flex flex-wrap gap-6 text-sm font-medium text-muted-foreground/70"
+            >
+              <div className="flex items-center gap-2"><div className="w-1 h-1 rounded-full bg-emerald-400" /> 774 LGAs</div>
+              <div className="flex items-center gap-2"><div className="w-1 h-1 rounded-full bg-emerald-400" /> Real-time</div>
+              <div className="flex items-center gap-2"><div className="w-1 h-1 rounded-full bg-emerald-400" /> AI Diagnostic</div>
+            </motion.div>
           </motion.div>
-
-          <motion.h1 
-            variants={itemVariants}
-            className="text-6xl md:text-8xl font-bold tracking-tight text-foreground max-w-5xl leading-[1.05]"
-          >
-            The neighbors who call <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">
-              before sickness strikes.
-            </span>
-          </motion.h1>
-
-          <motion.p 
-            variants={itemVariants}
-            className="text-xl md:text-2xl text-muted-foreground max-w-3xl leading-relaxed font-light"
-          >
-            Sabi Health protects your family with predictive AI. We monitor environment risks 
-            and send proactive voice alerts in Pidgin that everyone understands.
-          </motion.p>
 
           <motion.div 
-            variants={itemVariants}
-            className="flex flex-col sm:flex-row gap-5 pt-4"
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 1, delay: 0.5 }}
+            className="relative hidden lg:block"
           >
-            <Link href="/register">
-              <Button size="lg" variant="premium" className="h-14 px-8 rounded-2xl group shadow-xl shadow-emerald-500/20 text-lg">
-                Start Protecting Now
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
-            <Link href="/dashboard">
-              <Button size="lg" variant="outline" className="h-14 px-8 rounded-2xl border-2 text-lg hover:bg-muted/50 transition-colors">
-                Explore Dashboard
-              </Button>
-            </Link>
+            <div className="relative aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-2xl border-8 border-white dark:border-slate-800">
+              <div className="absolute inset-0 bg-gradient-to-tr from-emerald-600/20 to-teal-500/20" />
+              {/* Fallback pattern while image is missing */}
+              <div className="w-full h-full bg-emerald-50 dark:bg-emerald-950/20 flex items-center justify-center relative overflow-hidden">
+                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1576091160550-217359f42f8c?auto=format&fit=crop&q=80&w=1000')] bg-cover bg-center mix-blend-overlay opacity-60" />
+                <div className="relative z-10 flex flex-col items-center gap-4 text-center p-12">
+                   <div className="w-20 h-20 bg-white/90 dark:bg-slate-900/90 rounded-3xl flex items-center justify-center shadow-xl">
+                      <HeartPulse className="w-10 h-10 text-emerald-600" />
+                   </div>
+                   <div className="space-y-1">
+                      <p className="text-sm font-bold text-emerald-600 drop-shadow-sm">Nigeria Health Guardian</p>
+                      <p className="text-2xl font-bold text-foreground drop-shadow-sm">Protecting Nigerian Communities</p>
+                   </div>
+                </div>
+              </div>
+              
+              {/* Location Tag Overlay */}
+              <div className="absolute bottom-8 left-8 right-8 p-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-2xl shadow-xl border border-white/20 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center">
+                    <MapPin className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider">Live Location</p>
+                    <p className="text-sm font-bold text-foreground">Ikeja, Lagos, Nigeria 🇳🇬</p>
+                  </div>
+                </div>
+                <div className="px-2 py-1 rounded-md bg-emerald-500/10 text-[10px] font-bold text-emerald-600 uppercase">
+                  Active
+                </div>
+              </div>
+            </div>
+            
+            {/* Decorative elements */}
+            <div className="absolute -top-6 -right-6 w-32 h-32 bg-emerald-500/10 blur-3xl rounded-full" />
+            <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-teal-500/10 blur-3xl rounded-full" />
           </motion.div>
-
-          <motion.div 
-            variants={itemVariants}
-            className="pt-12 grid grid-cols-2 md:grid-cols-4 gap-8 opacity-60 grayscale hover:grayscale-0 transition-all duration-700"
-          >
-            <div className="flex items-center gap-2"><Zap className="w-5 h-5" /> 774 LGAs</div>
-            <div className="flex items-center gap-2"><Activity className="w-5 h-5" /> Real-time</div>
-            <div className="flex items-center gap-2"><HeartPulse className="w-5 h-5" /> AI Diagnostic</div>
-            <div className="flex items-center gap-2"><MapPin className="w-5 h-5" /> Nigeria-First</div>
-          </motion.div>
-        </motion.div>
+        </div>
       </section>
 
       {/* Trust & Features */}
@@ -158,13 +173,12 @@ export default function Home() {
       {/* Dashboard Teaser */}
       <section className="py-32 px-4">
         <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="max-w-6xl mx-auto glass-morphism rounded-[48px] p-8 md:p-20 flex flex-col lg:flex-row items-center gap-16 overflow-hidden border-white/10 relative"
+          className="max-w-6xl mx-auto bg-muted/30 rounded-[32px] p-8 md:p-16 flex flex-col lg:flex-row items-center gap-16 overflow-hidden border border-emerald-100/50 relative"
         >
-          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 blur-[100px] rounded-full -mr-32 -mt-32" />
           
           <div className="flex-1 space-y-8 relative z-10">
             <h2 className="text-5xl font-bold tracking-tight leading-tight">Monitor your community in real-time.</h2>
@@ -174,27 +188,27 @@ export default function Home() {
             </p>
             <div className="pt-4">
               <Link href="/dashboard">
-                <Button variant="premium" className="h-14 px-10 rounded-2xl text-lg shadow-xl shadow-emerald-500/10">
+                <Button variant="premium" className="h-12 px-8 rounded-xl text-md">
                   Open the Dashboard
-                  <ArrowRight className="ml-2 w-5 h-5" />
+                  <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
               </Link>
             </div>
           </div>
           
-          <div className="flex-1 relative w-full aspect-[4/3] lg:aspect-square rounded-[32px] overflow-hidden shadow-2xl border border-white/10 group">
-             <div className="absolute inset-0 bg-gradient-to-tr from-emerald-600/90 to-teal-500/90 flex items-center justify-center group-hover:scale-105 transition-transform duration-700">
-                <div className="text-white flex flex-col items-center gap-6 text-center p-10">
+          <div className="flex-1 relative w-full aspect-[4/3] lg:aspect-square rounded-2xl overflow-hidden border border-emerald-100/50 bg-white/50 dark:bg-slate-900/50 p-1">
+             <div className="w-full h-full bg-emerald-50 dark:bg-emerald-950/20 rounded-xl flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4 text-center">
                   <motion.div 
-                    animate={{ y: [0, -10, 0] }}
+                    animate={{ y: [0, -5, 0] }}
                     transition={{ duration: 4, repeat: Infinity }}
-                    className="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-md border border-white/20"
+                    className="w-16 h-16 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center border border-emerald-100/50 shadow-sm"
                   >
-                    <Activity className="w-10 h-10" />
+                    <Activity className="w-6 h-6 text-emerald-600" />
                   </motion.div>
-                  <div className="space-y-2">
-                    <Badge variant="secondary" className="bg-white/20 text-white border-0 py-1 px-3">Active Monitoring</Badge>
-                    <p className="text-3xl font-bold">Nigeria Health Map</p>
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-emerald-600">Active Monitoring</p>
+                    <p className="text-xl font-bold">Nigeria Health Map</p>
                   </div>
                 </div>
              </div>
@@ -233,13 +247,13 @@ function FeatureCard({ icon, title, description, delay }: { icon: React.ReactNod
       whileHover={{ y: -10 }}
       className="h-full"
     >
-      <Card className="h-full border-none bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl shadow-2xl hover:shadow-emerald-500/10 transition-all duration-500 rounded-[32px] overflow-hidden group">
+      <Card className="h-full border border-emerald-100/50 bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-all duration-300 rounded-[24px] overflow-hidden group">
         <CardContent className="p-10 flex flex-col h-full">
-          <div className="mb-8 p-6 bg-emerald-500/5 w-24 h-24 rounded-3xl flex items-center justify-center group-hover:bg-emerald-500/10 transition-colors border border-emerald-500/10">
+          <div className="mb-6 p-4 bg-emerald-50 dark:bg-emerald-950/30 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:bg-emerald-100 dark:group-hover:bg-emerald-950/50 transition-colors">
             {icon}
           </div>
           <h3 className="text-2xl font-bold mb-4">{title}</h3>
-          <p className="text-muted-foreground leading-relaxed text-lg font-light flex-grow">{description}</p>
+          <p className="text-muted-foreground leading-relaxed text-lg font-normal flex-grow">{description}</p>
         </CardContent>
       </Card>
     </motion.div>
